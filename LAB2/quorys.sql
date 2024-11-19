@@ -104,3 +104,27 @@ WITH RECURSIVE chain AS (
 SELECT  * -- select all
 FROM chain
 ORDER BY user_id; -- order by user id
+
+--P+
+
+WITH march AS (
+    SELECT post.userid AS user_id, COUNT(likes.postid) AS total_likes -- count the likes from each user
+    FROM post
+    LEFT JOIN likes ON likes.postid = post.postid -- join with likes
+    WHERE date_part('month', post.date) = 3 -- only March
+    GROUP BY post.userid -- group by user id
+),
+
+like_count AS (
+    SELECT march.user_id,
+    CASE WHEN SUM(march.total_likes) >= 50 THEN 'true' -- if total likes is greater than 50
+    ELSE 'false' -- if total likes is less than 50
+    END AS received -- check if user has liked more than 50 posts
+    FROM march
+    GROUP BY march.user_id -- group by user id
+)
+
+SELECT users.name, like_count.received -- select the name and received
+FROM like_count
+JOIN users ON like_count.user_id = users.userid -- join with users
+ORDER BY users.name;

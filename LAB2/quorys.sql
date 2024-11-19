@@ -21,37 +21,33 @@ WHERE RankedPosts.rank <= 5
 ORDER BY RankedPosts.rank;
 
 --Task 3:
-WITH weeklydata AS (
-    SELECT date_part('week', date) AS week,
-           subscription.date,
-           userid,
-           MIN(subscription.date) OVER (PARTITION BY userid) AS first_subscription_date
+
+
+--Task 4:
+WITH registration_date AS(
+    SELECT subscription.date, subscription.userid
     FROM subscription
+    WHERE date_part('month', subscription.date) = 1
 ),
-newcustomers AS (
-    SELECT week, COUNT(DISTINCT userid) AS new_customers
-    FROM weeklydata
-    WHERE weeklydata.date = weeklydata.first_subscription_date
-    GROUP BY week
+
+full_name AS(
+    SELECT  users.name, users.userid
+    FROM users
 ),
-keptcustomers AS (
-    SELECT week, COUNT(DISTINCT userid) AS kept_customers
-    FROM weeklydata
-    WHERE first_subscription_date < DATE_TRUNC('week', CURRENT_DATE) + (week - 1) * INTERVAL '1 week'
-    GROUP BY week
-),
-activity AS (
-    SELECT date_part('week', post.date) AS week,
-           COUNT(*) AS posts
-    FROM post
-    GROUP BY date_part('week', post.date)
+
+friendship AS(
+    SELECT DISTINCT friend.userid
+    FROM friend
 )
-SELECT newcustomers.week,
-       COALESCE(newcustomers.new_customers, 0) AS new_customers,
-       COALESCE(keptcustomers.kept_customers, 0) AS kept_customers,
-       COALESCE(activity.posts, 0) AS activity
-FROM newcustomers
-LEFT JOIN keptcustomers ON newcustomers.week = keptcustomers.week
-LEFT JOIN activity ON newcustomers.week = activity.week
-WHERE newcustomers.week BETWEEN 1 AND 30
-ORDER BY newcustomers.week;
+SELECT full_name.name AS full_name,
+CASE
+    WHEN friendship.userid IS NOT NULL THEN 'true'
+    ELSE 'false'
+END AS has_friend,
+registration_date.date AS registration_date
+FROM registration_date
+JOIN full_name ON registration_date.userid = full_name.userid
+LEFT JOIN friendship ON registration_date.userid = friendship.userid
+ORDER BY full_name.name ASC;
+
+--Task 5:

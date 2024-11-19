@@ -88,20 +88,19 @@ ORDER BY full_name.name ASC;
 
 --Task 5:
 WITH RECURSIVE chain AS (
-    SELECT users.userid, users.name, friend.friendid
+    SELECT users.name, users.userid AS user_id, friend.friendid AS friend_id
     FROM users
-    JOIN friend ON users.userid = friend.userid
+    LEFT JOIN friend ON friend.userid = users.userid
     WHERE users.userid = 20
 
     UNION ALL
 
-    SELECT users.userid, users.name, friend.friendid
+    SELECT users.name, users.userid AS user_id, friend.friendid AS friend_id
     FROM users
-    JOIN friend ON users.userid = friend.userid
-    JOIN chain ON friend.userid = chain.friendid
-    WHERE friend.friendid != chain.userid
+    LEFT JOIN friend ON friend.userid = users.userid
+    JOIN chain ON users.userid = chain.friend_id
 )
 
-SELECT chain.name, chain.userid, chain.friendid
+SELECT  *
 FROM chain
-ORDER BY chain.userid;
+ORDER BY user_id;

@@ -1,0 +1,21 @@
+kitten ssh palynski@staff-shell.sys.kth.se
+
+cd Private
+
+cat .psqlpw-psql-dd1368-ht23.sys.kth.se
+
+cU4P8Nay
+
+
+psql -h psql-dd1368-ht23.sys.kth.se
+Password: <contents of .psqlpw-psql-dd1368-ht23.sys.kth.se>
+mydb=>\c ‹insert the host user name here>      give access to partner
+
+dd1368=> GRANT ALL PRIVILEGES ON TABLE <insert table name here>
+TO <insert partner username here>;
+
+mydb=> \q # Exit psql with a psql-command
+mydb=> Ctrl+D # or with the shortcut
+
+$ exit # Exit the ssh-connection
+$ Ctrl+D # or with the shortcut

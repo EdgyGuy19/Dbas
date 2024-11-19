@@ -21,7 +21,43 @@ WHERE RankedPosts.rank <= 5
 ORDER BY RankedPosts.rank;
 
 --Task 3:
+WITH weeks AS (
+    SELECT generate_series(1, 30) AS week_number
+),
 
+new_customers AS(
+    SELECT subscription.userid,
+    date_part('week', MIN(subscription.date)) AS new_customer,
+    MIN(subscription.date) AS first_subscription
+    FROM subscription
+    GROUP BY subscription.userid
+),
+
+kept_customers AS(
+    SELECT subscription.userid,
+    date_part('week', subscription.date) AS kept_customer
+    FROM subscription
+    JOIN new_customers ON subscription.userid = new_customers.userid
+    WHERE subscription.date > new_customers.first_subscription
+),
+
+activity AS (
+    SELECT date_part('week', post.date) AS week_number_post,
+           COUNT(DISTINCT post.PostID) AS post_count 
+    FROM post
+    GROUP BY week_number_post
+)
+
+SELECT weeks.week_number, 
+       COUNT(DISTINCT new_customers.userid) AS new_customers, 
+       COUNT(DISTINCT kept_customers.userid) AS kept_customers, 
+       COALESCE(SUM(activity.post_count), 0) AS activity
+FROM weeks
+LEFT JOIN new_customers ON weeks.week_number = new_customers.new_customer
+LEFT JOIN kept_customers ON weeks.week_number = kept_customers.kept_customer
+LEFT JOIN activity ON weeks.week_number = activity.week_number_post
+GROUP BY weeks.week_number
+ORDER BY weeks.week_number;
 
 --Task 4:
 WITH registration_date AS(

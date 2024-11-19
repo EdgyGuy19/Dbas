@@ -87,3 +87,21 @@ LEFT JOIN friendship ON registration_date.userid = friendship.userid
 ORDER BY full_name.name ASC;
 
 --Task 5:
+WITH RECURSIVE chain AS (
+    SELECT users.userid, users.name, friend.friendid
+    FROM users
+    JOIN friend ON users.userid = friend.userid
+    WHERE users.userid = 20
+
+    UNION ALL
+
+    SELECT users.userid, users.name, friend.friendid
+    FROM users
+    JOIN friend ON users.userid = friend.userid
+    JOIN chain ON friend.userid = chain.friendid
+    WHERE friend.friendid != chain.userid
+)
+
+SELECT chain.name, chain.userid, chain.friendid
+FROM chain
+ORDER BY chain.userid;
